@@ -11,7 +11,7 @@
   "plugins": [
     {
       "name": "jingle-workflow",
-      "source": "./jingle-workflow",
+      "source": "./plugins/jingle-workflow",
       "description": "Common product & engineering workflows — starts with /review-requirements for multi-dimensional PRD review",
       "version": "0.1.0",
       "author": {
