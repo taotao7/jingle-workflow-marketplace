@@ -184,6 +184,12 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 
 **问题描述**: 具体是哪一段、哪一点没讲清楚或缺失。可引用原文。
 
+**项目依据**: 从当前项目中找到的客观证据，说明为什么这个问题必须由产品明确。例如：
+- 现有代码行为："`src/auth/login.ts:42` 当前实现是失败 3 次锁定 30 分钟，需求未说明是沿用还是修改"
+- 已有数据模型："`users` 表无 `login_attempts` 字段，若要实现需新增字段并回填"
+- 现有产品逻辑冲突："当前注册流程不要求手机号，但需求中'短信验证解锁'依赖手机号"
+- 线上数据/规模："当前日活 10 万用户，锁定策略直接影响客服工单量"
+
 **为什么重要**: 这个问题如果不解决，会导致什么后果（开发无法推进 / 体验不一致 / 合规风险等）。
 
 **期望回答**: 你希望产品以什么形式回答，例如：
@@ -238,6 +244,7 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 - Each item must be **a real question or problem**, not a generic complaint. "需求不完整" ❌ / "用户注销账户后，订单历史是否保留？保留多久？" ✅
 - **Quote the original text** when pointing out ambiguity or contradiction
 - **🚨 重点关注语意表达不明确的地方** — 这是产品最容易犯的错误。凡是读完后让你产生"这里到底是什么意思？"、"谁来做？"、"什么时候？"、"哪种情况？"等疑问的描述，都必须作为问题提出来。宁可把潜在的理解分歧都问清楚，也不要让开发凭猜测实现。对于每一处语意不清的地方，引用原文 → 指出可能的多种理解 → 要求产品明确选哪一种。
+- **🚨 每个问题必须有项目依据** — 不能凭空提问。每个问题的「项目依据」字段必须引用 Step 2 中获取的项目上下文作为客观证据：现有代码行为、数据模型、API 接口、已有产品逻辑、技术栈限制等。让产品看到"不是开发在挑刺，而是项目现状确实需要你明确这个点"。如果某个问题无法从项目中找到直接依据（如全新功能），则说明"当前项目无相关实现，需产品定义从零开始的规则"，这本身也是依据。
 - **Expected answer format** helps product team give concrete answers (number, flow, copy, decision)
 - Don't over-question — don't ask things that are clearly implied or that are engineering-side decisions (those go in the dev report)
 - If a question is really a technical concern, don't put it here — put it in the dev report instead
@@ -287,4 +294,5 @@ Top 3 阻塞问题:
 - Be **specific and actionable** — every item should be concrete enough to directly act on. Avoid generic statements like "注意性能" or "需求不完整"
 - Do not invent requirements — only evaluate what is written, and flag what is missing
 - Ground the developer report in the **actual project context** from Step 2 (real file paths, real services, real frameworks)
+- Ground the product report in the **actual project context** too — every question must include a「项目依据」citing concrete evidence from the codebase (existing code behavior, data models, API contracts, tech stack constraints). Product questions without project-level evidence are not actionable and will be ignored by the product team.
 - When in doubt about a dimension, raise it as a question (product report) or a caveat (dev report) rather than silently passing it
