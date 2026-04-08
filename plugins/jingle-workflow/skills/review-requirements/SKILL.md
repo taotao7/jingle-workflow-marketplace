@@ -60,7 +60,7 @@ Provide a one-line justification for each rating.
 | # | Dimension | Key questions |
 |---|-----------|---------------|
 | 1 | **完整性 (Completeness)** | Are functional scope, non-functional requirements (performance, availability, security), acceptance criteria, and success metrics all present? |
-| 2 | **清晰性 (Clarity)** | Is the language unambiguous? Are there vague modifiers like "快速", "用户友好", "高性能" without concrete numbers? Is terminology consistent throughout? |
+| 2 | **清晰性 (Clarity)** | Is the language unambiguous? Are there vague modifiers like "快速", "用户友好", "高性能" without concrete numbers? Is terminology consistent throughout? **特别注意语意表达不明确的描述** — 产品需求文档中最常见的问题就是语意含糊，导致开发无法理解真正的意图。例如：主语缺失（"需要处理" — 谁处理？系统还是用户？）、条件不完整（"某些情况下" — 哪些情况？）、因果关系模糊（"优化体验" — 具体改善什么指标？）、逻辑歧义（"A 或 B 完成后" — 是任意一个还是两个都要？）。 |
 | 3 | **可行性 (Feasibility)** | Is this achievable with the current tech stack and architecture? What are the technical unknowns? (Use project context from Step 2) |
 | 4 | **一致性 (Consistency)** | Are there internal contradictions? Does the requirement align with existing product behavior and design patterns? |
 | 5 | **合理性 (Rationality)** | Does this solve a real user problem? Is the effort proportional to the expected value? Is the scope bounded and not over-engineered? |
@@ -199,14 +199,24 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 
 ### 🟢 Q_n. ...
 
-## 模糊表达对照表
+## 语意不清与模糊表达对照表
 
-> 需求中出现的、必须改写成可度量/可验证的模糊表述
+> **这是产品需求文档最常犯的错误。** 不仅要找出模糊的修饰词（如"快速"、"高性能"），更要找出语意表达不明确、让开发无法理解真正意图的描述。
+>
+> 常见的语意不清类型：
+> - **主语/对象缺失**："需要处理该数据" → 谁处理？系统自动还是用户手动？
+> - **条件/边界不完整**："某些情况下跳过验证" → 哪些情况？如何判断？
+> - **因果/目的模糊**："优化用户体验" → 具体哪个环节？改善什么指标？
+> - **逻辑歧义**："A 或 B 完成后触发" → 任意一个完成就触发，还是两个都完成？
+> - **指代不明**："将其同步到系统" → "其"是什么？同步到哪个系统？
+> - **隐含假设**："按照正常流程处理" → 什么是"正常流程"？文档没有定义
 
-| # | 原文 | 问题 | 建议改写 |
-|---|------|------|----------|
-| 1 | "响应要快" | 没有具体指标 | "接口 P95 响应 < 300ms" |
-| 2 | "用户友好" | 无法验收 | "所有错误提示包含 [原因 + 解决建议]，全流程无死胡同" |
+| # | 原文 | 问题类型 | 问题 | 建议改写 |
+|---|------|----------|------|----------|
+| 1 | "响应要快" | 模糊修饰 | 没有具体指标 | "接口 P95 响应 < 300ms" |
+| 2 | "用户友好" | 模糊修饰 | 无法验收 | "所有错误提示包含 [原因 + 解决建议]，全流程无死胡同" |
+| 3 | "系统需要处理异常" | 主语/对象缺失 | 哪个模块处理？如何处理？ | "支付模块捕获超时异常后，重试 1 次，仍失败则记录日志并通知用户" |
+| 4 | "完成后通知相关人员" | 指代不明 | "完成"指什么？"相关人员"是谁？ | "订单发货后，通过站内信通知下单用户和对应客服" |
 
 ## 合规与法务提醒
 
@@ -227,6 +237,7 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 
 - Each item must be **a real question or problem**, not a generic complaint. "需求不完整" ❌ / "用户注销账户后，订单历史是否保留？保留多久？" ✅
 - **Quote the original text** when pointing out ambiguity or contradiction
+- **🚨 重点关注语意表达不明确的地方** — 这是产品最容易犯的错误。凡是读完后让你产生"这里到底是什么意思？"、"谁来做？"、"什么时候？"、"哪种情况？"等疑问的描述，都必须作为问题提出来。宁可把潜在的理解分歧都问清楚，也不要让开发凭猜测实现。对于每一处语意不清的地方，引用原文 → 指出可能的多种理解 → 要求产品明确选哪一种。
 - **Expected answer format** helps product team give concrete answers (number, flow, copy, decision)
 - Don't over-question — don't ask things that are clearly implied or that are engineering-side decisions (those go in the dev report)
 - If a question is really a technical concern, don't put it here — put it in the dev report instead
