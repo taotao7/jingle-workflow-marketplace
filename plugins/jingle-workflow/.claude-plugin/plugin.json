@@ -1,0 +1,14 @@
+{
+  "name": "jingle-workflow",
+  "description": "Common product & engineering workflows for Jingle teams",
+  "version": "0.1.0",
+  "author": {
+    "name": "Jingle Team"
+  },
+  "keywords": [
+    "product",
+    "review",
+    "workflow",
+    "requirements"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "name": "jingle-workflow-marketplace",
+  "owner": {
+    "name": "Jingle Team"
+  },
+  "metadata": {
+    "description": "Monorepo of shared Claude Code skills and workflows for Jingle product development",
+    "version": "0.1.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "jingle-workflow",
+      "source": "./jingle-workflow",
+      "description": "Common product & engineering workflows — starts with /review-requirements for multi-dimensional PRD review",
+      "version": "0.1.0",
+      "author": {
+        "name": "Jingle Team"
+      },
+      "category": "productivity",
+      "keywords": [
+        "product",
+        "review",
+        "workflow",
+        "requirements",
+        "prd"
+      ]
+    }
+  ]
+}
