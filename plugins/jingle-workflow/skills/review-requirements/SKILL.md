@@ -5,7 +5,8 @@ description: >
   Grounds feasibility assessment in the current project's codebase and tech stack.
   Produces two reports: one for developers, one for the product team — covering
   completeness, clarity, feasibility, consistency, rationality, compliance, risk,
-  testability, UX, data, priority, and dependencies.
+  testability, UX, data, priority, and dependencies. Mandatorily surfaces every
+  unclear or semantically ambiguous phrase found in the requirement.
   Use when the user asks to review, evaluate, critique, or check a product requirement,
   PRD, spec, user story, or feature request.
 ---
@@ -45,7 +46,35 @@ Capture a brief summary (3-5 bullets) of the project context. This informs the f
 
 ---
 
-## Step 3: Multi-dimensional evaluation
+## Step 3: Mandatory ambiguity scan (不清晰 / 语意不详)
+
+**This step is required. Do not skip it even if the document looks polished.**
+
+Go through the requirement line by line and flag **every** description that is unclear, ambiguous, or open to multiple interpretations. Product requirement docs' most common failure mode is not "missing content" — it's "content that reads fluently but means different things to different readers". These must be surfaced explicitly, not buried inside other dimensions.
+
+For each flagged phrase, record:
+
+1. **原文引用** — the exact sentence/phrase from the document (copy it verbatim)
+2. **位置** — section / paragraph / line if available
+3. **问题类型** — one of:
+   - 模糊修饰词 (e.g., "快速", "高性能", "用户友好" without concrete numbers)
+   - 主语/对象缺失 ("需要处理" — 谁处理？系统自动还是用户手动？)
+   - 条件/边界不完整 ("某些情况下" — 哪些情况？如何判断？)
+   - 因果/目的模糊 ("优化体验" — 改善哪个具体指标？)
+   - 逻辑歧义 ("A 或 B 完成后" — 任意一个还是两个都要？)
+   - 指代不明 ("将其同步" — "其"是什么？同步到哪里？)
+   - 隐含假设 ("按正常流程处理" — 哪里定义了"正常流程"？)
+   - 术语不一致 (同一概念用了多个名字，或同一名字指多个概念)
+4. **可能的多种理解** — at least 2 interpretations a developer could reasonably choose
+5. **需要产品回答什么** — the concrete clarification you need
+
+**Rule of thumb**: If after reading a sentence you can ask "who? when? which case? what exactly?" and the answer isn't spelled out within 1-2 paragraphs, it's ambiguous — flag it. Err on the side of flagging more, not fewer. Better to ask a question that turns out obvious than to let developers guess.
+
+This scan feeds directly into Step 6's 语意不清与模糊表达对照表 (which is **mandatory** — include it even if the list ends up empty, explicitly stating "未发现语意不清问题").
+
+---
+
+## Step 4: Multi-dimensional evaluation
 
 Evaluate the requirements on all 12 dimensions below. For each dimension, assign one of three ratings:
 
@@ -60,7 +89,7 @@ Provide a one-line justification for each rating.
 | # | Dimension | Key questions |
 |---|-----------|---------------|
 | 1 | **完整性 (Completeness)** | Are functional scope, non-functional requirements (performance, availability, security), acceptance criteria, and success metrics all present? |
-| 2 | **清晰性 (Clarity)** | Is the language unambiguous? Are there vague modifiers like "快速", "用户友好", "高性能" without concrete numbers? Is terminology consistent throughout? **特别注意语意表达不明确的描述** — 产品需求文档中最常见的问题就是语意含糊，导致开发无法理解真正的意图。例如：主语缺失（"需要处理" — 谁处理？系统还是用户？）、条件不完整（"某些情况下" — 哪些情况？）、因果关系模糊（"优化体验" — 具体改善什么指标？）、逻辑歧义（"A 或 B 完成后" — 是任意一个还是两个都要？）。 |
+| 2 | **清晰性 (Clarity)** | Is the language unambiguous? Are vague modifiers avoided (no "快速"/"用户友好"/"高性能" without concrete numbers)? Is terminology consistent? **This dimension's rating must align with Step 3's ambiguity scan — if any items were flagged in Step 3, this dimension cannot be PASS.** |
 | 3 | **可行性 (Feasibility)** | Is this achievable with the current tech stack and architecture? What are the technical unknowns? (Use project context from Step 2) |
 | 4 | **一致性 (Consistency)** | Are there internal contradictions? Does the requirement align with existing product behavior and design patterns? |
 | 5 | **合理性 (Rationality)** | Does this solve a real user problem? Is the effort proportional to the expected value? Is the scope bounded and not over-engineered? |
@@ -74,7 +103,7 @@ Provide a one-line justification for each rating.
 
 ---
 
-## Step 4: Write the developer report — 开发实施注意事项
+## Step 5: Write the developer report — 开发实施注意事项
 
 **Purpose: this report is a list of things developers must pay attention to when implementing this requirement.** It is NOT a spec rewrite, NOT a feasibility essay. It's a practical watchlist of landmines, edge cases, architectural impacts, and technical decisions to keep in mind during coding, testing, and rollout.
 
@@ -155,7 +184,7 @@ Create the file `./review-reports/dev-review-YYYY-MM-DD.md` (use today's date; i
 
 ---
 
-## Step 5: Write the product report — 产品需求问题清单
+## Step 6: Write the product report — 产品需求问题清单
 
 **Purpose: this report is a list of questions/issues the product team needs to answer or address before the requirement can be implemented.** It is NOT a rewritten spec, NOT a technical assessment. Every item should be a clear question or concrete problem that product needs to fix in the PRD.
 
@@ -171,7 +200,32 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 
 ## 总览
 
-[2-3 句话概括需求文档的主要问题。例如"核心流程清晰，但缺少异常场景定义、未明确 MVP 范围、且涉及用户隐私数据但未说明合规要求，共提出 14 个问题"]
+[2-3 句话概括需求文档的主要问题。例如"核心流程清晰，但缺少异常场景定义、未明确 MVP 范围、且涉及用户隐私数据但未说明合规要求，共提出 14 个问题，语意不清 6 处"]
+
+## 🚨 语意不清与模糊表达对照表（必填）
+
+> **这是产品需求文档最常犯的错误，也是这份报告最重要的部分之一。** 此表必须存在 —— 即使扫描后没有发现任何问题，也要显式写明"未发现语意不清问题"，不能直接省略此小节。
+>
+> 本表来源于 Step 3 的强制扫描结果。收录范围包括：
+> - **模糊修饰词**（如"快速"、"高性能"、"用户友好"，缺少具体指标）
+> - **主语/对象缺失**（"需要处理该数据" → 谁处理？系统自动还是用户手动？）
+> - **条件/边界不完整**（"某些情况下跳过验证" → 哪些情况？如何判断？）
+> - **因果/目的模糊**（"优化用户体验" → 具体哪个环节？改善什么指标？）
+> - **逻辑歧义**（"A 或 B 完成后触发" → 任意一个完成就触发，还是两个都完成？）
+> - **指代不明**（"将其同步到系统" → "其"是什么？同步到哪个系统？）
+> - **隐含假设**（"按照正常流程处理" → 什么是"正常流程"？文档没有定义）
+> - **术语不一致**（同一概念用了多个名字，或同一名字指多个概念）
+>
+> **扫描原则**：读完一句话后只要产生"谁？什么时候？哪种情况？具体指什么？"等疑问，且答案没有在相邻上下文中给出，就必须收录。宁可多记，不可漏记。
+
+| # | 位置 | 原文 | 问题类型 | 可能的多种理解 | 需要产品回答 | 建议改写示例 |
+|---|------|------|----------|----------------|--------------|--------------|
+| 1 | 2.1 节 | "响应要快" | 模糊修饰词 | <300ms? <1s? <3s? | 明确 P95 响应时间上限 | "接口 P95 响应 < 300ms" |
+| 2 | 3.2 节 | "系统需要处理异常" | 主语/对象缺失 | 前端 try/catch? 后端重试? 运维告警? | 明确哪个模块在什么层面处理 | "支付模块捕获超时异常后，重试 1 次，仍失败则记录日志并通知用户" |
+| 3 | 4.1 节 | "A 或 B 完成后触发通知" | 逻辑歧义 | (a) 任意一个完成即触发 (b) 两个都完成才触发 | 明确是 OR 还是 AND | "A 和 B 都完成后触发一次通知" |
+| 4 | 5.3 节 | "完成后通知相关人员" | 指代不明 | "完成"=下单? 支付? 发货? "相关人员"=客服? 运营? 下单用户? | 明确触发点和通知对象 | "订单发货后，通过站内信通知下单用户和对应客服" |
+
+> 如果扫描后确认文档表达完全清晰，将整张表替换为一行："✅ 未发现语意不清或表达模糊的描述。"
 
 ## 问题清单
 
@@ -205,25 +259,6 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 
 ### 🟢 Q_n. ...
 
-## 语意不清与模糊表达对照表
-
-> **这是产品需求文档最常犯的错误。** 不仅要找出模糊的修饰词（如"快速"、"高性能"），更要找出语意表达不明确、让开发无法理解真正意图的描述。
->
-> 常见的语意不清类型：
-> - **主语/对象缺失**："需要处理该数据" → 谁处理？系统自动还是用户手动？
-> - **条件/边界不完整**："某些情况下跳过验证" → 哪些情况？如何判断？
-> - **因果/目的模糊**："优化用户体验" → 具体哪个环节？改善什么指标？
-> - **逻辑歧义**："A 或 B 完成后触发" → 任意一个完成就触发，还是两个都完成？
-> - **指代不明**："将其同步到系统" → "其"是什么？同步到哪个系统？
-> - **隐含假设**："按照正常流程处理" → 什么是"正常流程"？文档没有定义
-
-| # | 原文 | 问题类型 | 问题 | 建议改写 |
-|---|------|----------|------|----------|
-| 1 | "响应要快" | 模糊修饰 | 没有具体指标 | "接口 P95 响应 < 300ms" |
-| 2 | "用户友好" | 模糊修饰 | 无法验收 | "所有错误提示包含 [原因 + 解决建议]，全流程无死胡同" |
-| 3 | "系统需要处理异常" | 主语/对象缺失 | 哪个模块处理？如何处理？ | "支付模块捕获超时异常后，重试 1 次，仍失败则记录日志并通知用户" |
-| 4 | "完成后通知相关人员" | 指代不明 | "完成"指什么？"相关人员"是谁？ | "订单发货后，通过站内信通知下单用户和对应客服" |
-
 ## 合规与法务提醒
 
 > 涉及数据隐私、安全、无障碍、法律等方面需要产品/法务确认的点（如果有）
@@ -251,7 +286,7 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 
 ---
 
-## Step 6: Output
+## Step 7: Output
 
 1. Ensure the `./review-reports/` directory exists (create it if not)
 2. Write both report files
@@ -270,6 +305,7 @@ Top 3 必须处理项:
 
 ### 给产品的问题清单
 **判断: [可以进入开发 / 需要补充后再评审 / 需要重大调整]**
+🚨 语意不清/表达模糊: M 处（详见报告「语意不清与模糊表达对照表」）
 Top 3 阻塞问题:
 1. 🔴 Q?. ...
 2. 🔴 Q?. ...
@@ -296,3 +332,4 @@ Top 3 阻塞问题:
 - Ground the developer report in the **actual project context** from Step 2 (real file paths, real services, real frameworks)
 - Ground the product report in the **actual project context** too — every question must include a「项目依据」citing concrete evidence from the codebase (existing code behavior, data models, API contracts, tech stack constraints). Product questions without project-level evidence are not actionable and will be ignored by the product team.
 - When in doubt about a dimension, raise it as a question (product report) or a caveat (dev report) rather than silently passing it
+- **🚨 Ambiguity scan is non-negotiable** — Step 3 must be executed for every review. The 「语意不清与模糊表达对照表」section in the product report must always exist, even if empty (in which case write "✅ 未发现语意不清或表达模糊的描述"). Missing this section is a bug in the review, not a stylistic choice. When a sentence in the requirement could be read two different ways by two different developers, that IS a problem that must be surfaced — do not resolve the ambiguity silently in your head, bring it back to product.
