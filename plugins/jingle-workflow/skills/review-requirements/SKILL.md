@@ -54,8 +54,8 @@ Go through the requirement line by line and flag **every** description that is u
 
 For each flagged phrase, record:
 
-1. **原文引用** — the exact sentence/phrase from the document (copy it verbatim)
-2. **位置** — section / paragraph / line if available
+1. **原文引用** — the exact sentence/phrase from the document (copy it verbatim, 必须一字不差地复制原文)
+2. **位置** — 尽可能精确地标出位置：章节号 + 段落 + 原文关键词。格式举例："第 2.1 节「用户登录」第 3 段，原文：'响应要快'"。目的是让产品拿到报告后能在 3 秒内定位到需求文档里的具体位置。
 3. **问题类型** — one of:
    - 模糊修饰词 (e.g., "快速", "高性能", "用户友好" without concrete numbers)
    - 主语/对象缺失 ("需要处理" — 谁处理？系统自动还是用户手动？)
@@ -109,6 +109,16 @@ Provide a one-line justification for each rating.
 
 Create the file `./review-reports/dev-review-YYYY-MM-DD.md` (use today's date; if the file already exists, append `-2`, `-3`, etc.).
 
+### 写作风格要求（极其重要）
+
+**这份报告必须用大白话写，让任何人拿到都能看懂。** 具体要求：
+
+1. **说人话**：不要用"鉴于上述分析"、"综上所述"这类官腔。用"因为…所以…"、"简单说就是…"、"举个例子…"这样的日常表达。
+2. **交代前因后果**：每个问题不能只说"这里有风险"，必须把来龙去脉讲清楚——现在是什么情况、需求要改成什么样、为什么会出问题、不处理会怎样。读者不需要去翻需求文档或代码就能理解。
+3. **一个问题讲完整**：每条注意事项必须是一个完整的故事，包含背景、问题、影响、建议，不能只写一个结论让人去猜。
+4. **避免纯术语堆砌**：技术术语可以用，但必须跟上一句解释。比如不要只写"N+1 查询问题"，而是写"N+1 查询问题（就是说列表页每显示一行就要查一次数据库，100 行就查 100 次，会很慢）"。
+5. **报告要自包含**：别人拿到这份报告，不需要再去找需求文档对照就能完全理解每一个问题。如果引用了需求里的内容，直接引用原文。
+
 ### Report structure
 
 ```markdown
@@ -121,7 +131,8 @@ Create the file `./review-reports/dev-review-YYYY-MM-DD.md` (use today's date; i
 
 ## 总览
 
-[2-3 句话概括整体情况，例如"需求基本可行，但鉴权模型与现有系统冲突，且涉及 PII 数据，建议重点关注第 2、5、7 项"]
+[用 2-3 句大白话概括整体情况。不要用"经过多维度评估"这样的套话，直接说重点。
+例如："这个需求大体上能做，主要卡在两个地方：一是登录模块的权限逻辑和现在线上的不一样，需要先和产品对齐到底怎么改；二是涉及到用户手机号这类敏感数据，合规上要走一下流程。其他的都还好，下面第 2 和第 5 项要重点看。"]
 
 ## 注意事项清单
 
@@ -131,11 +142,17 @@ Create the file `./review-reports/dev-review-YYYY-MM-DD.md` (use today's date; i
 
 **类别**: 数据 / 架构 / 安全 / 性能 / 依赖 / 边界情况 / 测试 / 部署
 
-**要点**: 具体说明这个点为什么需要注意。
+**需求原文位置**: [标出对应需求文档中的位置和原文。格式：第 X 节「章节名」第 Y 段，原文："..."。让人能快速回溯到需求文档中找到出处]
 
-**影响面**: 涉及哪些模块、接口、服务、团队。
+**现在是什么情况**: 用大白话说清楚当前系统的现状，让没看过代码的人也能理解。
 
-**建议处理方式**: 推荐怎么做，或者需要怎么和谁对齐。
+**需求要做什么改动**: 说清楚需求里要求做的事情和现状之间的差异。
+
+**为什么会有问题**: 把因果逻辑讲明白——因为 A，所以如果直接做 B，就会出现 C。
+
+**不处理会怎样**: 说清楚后果，让人理解严重程度。
+
+**建议怎么做**: 推荐的处理方式，或者需要找谁对齐、确认什么信息。
 
 ---
 
@@ -147,9 +164,9 @@ Create the file `./review-reports/dev-review-YYYY-MM-DD.md` (use today's date; i
 
 ## 维度评分（内部参考）
 
-| 维度 | 评级 | 一句话 |
-|------|------|--------|
-| 完整性 | PASS/NEEDS WORK/MISSING | ... |
+| 维度 | 评级 | 一句话说明 |
+|------|------|-----------|
+| 完整性 | PASS/NEEDS WORK/MISSING | [用一句大白话解释为什么给这个评级] |
 | 清晰性 | ... | ... |
 | 可行性 | ... | ... |
 | 一致性 | ... | ... |
@@ -169,7 +186,8 @@ Create the file `./review-reports/dev-review-YYYY-MM-DD.md` (use today's date; i
 
 ### Guidance for generating the notice list
 
-- Every item must be **actionable and concrete** — not "注意性能" but "N+1 查询风险：列表页每行调用 `getUser()`，需改为批量拉取"
+- Every item must be **actionable, concrete, and self-explanatory** — not "注意性能" but "列表页有性能隐患：现在的写法是每显示一行就调一次 `getUser()` 去查数据库，如果列表有 100 条数据就要查 100 次，页面会很慢。应该改成一次性批量拉取所有用户信息。"
+- **每条注意事项必须是一个完整的故事**：读者不需要额外去看需求文档或代码就能理解问题的全貌。包含背景（现状）→ 变化（需求要做什么）→ 冲突（为什么有问题）→ 后果（不管会怎样）→ 建议（怎么解决）。
 - Ground each item in the **actual project context** detected in Step 2 (real file paths, real services, real frameworks)
 - Typical categories to cover (skip any that don't apply):
   - 数据模型变更 / 迁移 / 回填 / 历史兼容
@@ -190,6 +208,16 @@ Create the file `./review-reports/dev-review-YYYY-MM-DD.md` (use today's date; i
 
 Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/collision rules).
 
+### 写作风格要求（极其重要）
+
+**这份报告要让产品经理、测试、设计师、甚至不写代码的领导都能看懂。** 具体要求：
+
+1. **说人话，不说术语**：产品报告的读者可能完全不懂技术。所有技术概念必须翻译成业务语言。比如不要说"数据库迁移"，说"需要把现有的几十万条用户数据都更新一遍，加上新的字段"。
+2. **每个问题讲清楚背景**：不能假设读者知道项目现状。每个问题必须先简单交代"现在系统是怎么工作的"，再说"需求里要改成什么样"，最后说"所以需要你明确的是什么"。
+3. **报告要自包含**：别人拿到这份报告，不用再去翻需求文档、不用再去问开发，就能完全理解每一个问题在说什么。引用需求原文时直接贴出来，解释项目现状时用白话描述。
+4. **问题要具体到能直接回答**：不要问"这里需要明确"，要问"用户连续输错密码 5 次之后，是锁定账号 30 分钟、还是弹验证码、还是发短信验证？请选一个方案"。
+5. **用类比和例子帮助理解**：遇到需要解释的技术限制，用生活化的类比。比如："这就像搬家时发现新房子的门框比旧家具窄——不是不能搬，但要么换家具要么改门框，得先定下来。"
+
 ### Report structure
 
 ```markdown
@@ -200,56 +228,61 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 
 ## 总览
 
-[2-3 句话概括需求文档的主要问题。例如"核心流程清晰，但缺少异常场景定义、未明确 MVP 范围、且涉及用户隐私数据但未说明合规要求，共提出 14 个问题，语意不清 6 处"]
+[用 2-3 句大白话概括需求文档的主要问题。像在和产品经理当面聊天一样说。
+例如："需求写的主要功能都清楚，但有三个大问题：第一，好几个地方说的不够具体，开发看了会有不同的理解（比如'快速响应'到底是多快？）；第二，没说清楚用户操作出错的时候怎么办；第三，这个功能会用到用户的手机号，但需求里没提到隐私合规怎么处理。一共列了 14 个问题，其中 6 处是表述不清需要改写。"]
 
 ## 🚨 语意不清与模糊表达对照表（必填）
 
 > **这是产品需求文档最常犯的错误，也是这份报告最重要的部分之一。** 此表必须存在 —— 即使扫描后没有发现任何问题，也要显式写明"未发现语意不清问题"，不能直接省略此小节。
 >
-> 本表来源于 Step 3 的强制扫描结果。收录范围包括：
-> - **模糊修饰词**（如"快速"、"高性能"、"用户友好"，缺少具体指标）
-> - **主语/对象缺失**（"需要处理该数据" → 谁处理？系统自动还是用户手动？）
-> - **条件/边界不完整**（"某些情况下跳过验证" → 哪些情况？如何判断？）
-> - **因果/目的模糊**（"优化用户体验" → 具体哪个环节？改善什么指标？）
-> - **逻辑歧义**（"A 或 B 完成后触发" → 任意一个完成就触发，还是两个都完成？）
-> - **指代不明**（"将其同步到系统" → "其"是什么？同步到哪个系统？）
-> - **隐含假设**（"按照正常流程处理" → 什么是"正常流程"？文档没有定义）
-> - **术语不一致**（同一概念用了多个名字，或同一名字指多个概念）
+> **为什么这张表很重要？** 因为需求文档里最大的坑不是"没写什么"，而是"写了但每个人理解不一样"。产品觉得意思很清楚，但开发 A 理解成方案一，开发 B 理解成方案二，等做出来才发现不对，返工成本很高。这张表就是把所有"容易被不同人理解成不同意思"的地方全部找出来，提前对齐。
 >
-> **扫描原则**：读完一句话后只要产生"谁？什么时候？哪种情况？具体指什么？"等疑问，且答案没有在相邻上下文中给出，就必须收录。宁可多记，不可漏记。
+> 收录范围包括：
+> - **模糊修饰词**（如"快速"、"高性能"、"用户友好"，缺少具体指标——快是多快？用什么数字衡量？）
+> - **主语/对象缺失**（"需要处理该数据" → 谁来处理？系统自动处理还是用户手动操作？）
+> - **条件/边界不完整**（"某些情况下跳过验证" → 到底哪些情况？怎么判断要不要跳过？）
+> - **因果/目的模糊**（"优化用户体验" → 具体改善哪个环节？用什么指标衡量改善了？）
+> - **逻辑歧义**（"A 或 B 完成后触发" → 是任意一个完成就触发，还是两个都完成才触发？）
+> - **指代不明**（"将其同步到系统" → "其"到底指什么数据？同步到哪个系统？）
+> - **隐含假设**（"按照正常流程处理" → 什么算"正常流程"？文档里没有定义过）
+> - **术语不一致**（同一个东西用了好几个名字，或者同一个名字在不同地方指不同的东西）
 
-| # | 位置 | 原文 | 问题类型 | 可能的多种理解 | 需要产品回答 | 建议改写示例 |
-|---|------|------|----------|----------------|--------------|--------------|
-| 1 | 2.1 节 | "响应要快" | 模糊修饰词 | <300ms? <1s? <3s? | 明确 P95 响应时间上限 | "接口 P95 响应 < 300ms" |
-| 2 | 3.2 节 | "系统需要处理异常" | 主语/对象缺失 | 前端 try/catch? 后端重试? 运维告警? | 明确哪个模块在什么层面处理 | "支付模块捕获超时异常后，重试 1 次，仍失败则记录日志并通知用户" |
-| 3 | 4.1 节 | "A 或 B 完成后触发通知" | 逻辑歧义 | (a) 任意一个完成即触发 (b) 两个都完成才触发 | 明确是 OR 还是 AND | "A 和 B 都完成后触发一次通知" |
-| 4 | 5.3 节 | "完成后通知相关人员" | 指代不明 | "完成"=下单? 支付? 发货? "相关人员"=客服? 运营? 下单用户? | 明确触发点和通知对象 | "订单发货后，通过站内信通知下单用户和对应客服" |
+| # | 位置（精确到章节+段落） | 原文（直接复制需求里的原话） | 问题出在哪 | 开发可能理解成哪些不同意思 | 需要产品明确什么 | 建议改写成这样 |
+|---|--------------------------|------------------------------|------------|---------------------------|------------------|----------------|
+| 1 | 第 2.1 节「用户登录」第 3 段 | "响应要快" | 模糊修饰词——"快"没有标准，不同人理解不同 | 开发 A 觉得是 300 毫秒内返回，开发 B 觉得 3 秒内就算快 | 请给出具体数字：接口响应时间上限是多少？ | "接口响应时间不超过 300 毫秒（P95 标准）" |
+| 2 | 第 3.2 节「异常处理」第 1 段 | "系统需要处理异常" | 没说清楚谁处理、怎么处理 | (a) 前端弹个错误提示就行 (b) 后端自动重试 (c) 通知运维处理 | 明确是哪个模块、在什么层面、用什么方式处理异常 | "支付模块遇到超时后自动重试 1 次，仍然失败就记录日志并弹窗告诉用户'支付失败，请稍后重试'" |
+| 3 | 第 4.1 节「通知机制」第 2 段 | "A 或 B 完成后触发通知" | "或"字有歧义 | (a) A 和 B 任意一个完成就发通知 (b) A 和 B 都完成了才发通知 | 请明确是"只要一个完成就发"还是"两个都完成才发" | "A 和 B 都完成后，触发一次通知" |
+| 4 | 第 5.3 节「订单流程」第 4 段 | "完成后通知相关人员" | "完成"和"相关人员"都不明确 | "完成"可能是下单、支付、或发货；"相关人员"可能是客服、运营、或用户自己 | 请明确：什么动作算"完成"？通知发给谁？通过什么渠道发？ | "订单发货后，通过站内信通知下单用户，同时通过企微通知对应客服" |
 
 > 如果扫描后确认文档表达完全清晰，将整张表替换为一行："✅ 未发现语意不清或表达模糊的描述。"
 
 ## 问题清单
 
-> 每个问题独立成项，包含所属维度、问题描述、为什么重要、期望的回答格式。
-> 优先级：🔴 阻塞（不解答无法开发）/ 🟡 重要（影响实施质量）/ 🟢 建议（锦上添花）
+> 每个问题独立成项。读起来要像在和产品经理面对面聊天，把问题说清楚。
+> 优先级：🔴 阻塞（这个不回答，开发就没法动手）/ 🟡 重要（不回答也能做，但做出来可能不对）/ 🟢 建议（有更好，没有也行）
 
-### 🔴 Q1. [一句话问题，例如"用户登录失败 5 次后应该如何处理？"]
+### 🔴 Q1. [一句话问题，用疑问句，例如"用户连续登录失败 5 次之后，应该怎么处理？"]
 
 **维度**: 完整性 / 清晰性 / 一致性 / 合理性 / 合规性 / 可测试性 / 优先级 / 依赖 / 风险 / UX / 数据
 
-**问题描述**: 具体是哪一段、哪一点没讲清楚或缺失。可引用原文。
+**需求原文位置**: [精确标出问题出处，格式：第 X 节「章节名」第 Y 段。引用原文加引号。让产品能快速在文档中定位。例如：第 3.2 节「支付流程」第 2 段，原文："支付完成后进行相应处理"]
 
-**项目依据**: 从当前项目中找到的客观证据，说明为什么这个问题必须由产品明确。例如：
-- 现有代码行为："`src/auth/login.ts:42` 当前实现是失败 3 次锁定 30 分钟，需求未说明是沿用还是修改"
-- 已有数据模型："`users` 表无 `login_attempts` 字段，若要实现需新增字段并回填"
-- 现有产品逻辑冲突："当前注册流程不要求手机号，但需求中'短信验证解锁'依赖手机号"
-- 线上数据/规模："当前日活 10 万用户，锁定策略直接影响客服工单量"
+**这个问题是什么意思（白话解释）**:
+先交代背景：现在系统是怎么做的（或者现在没有这个功能），然后说需求里写了什么（引用原文），再说明到底哪里不清楚、或者哪里和现状有冲突。
 
-**为什么重要**: 这个问题如果不解决，会导致什么后果（开发无法推进 / 体验不一致 / 合规风险等）。
+写的时候想象你在给一个完全不了解这个项目的人解释这个问题，让他读完就能理解为什么这个问题必须由产品来定。
 
-**期望回答**: 你希望产品以什么形式回答，例如：
-- 明确数字：多少次之后锁定？锁定多久？
-- 具体流程：锁定后用户如何解锁？
-- 文案：锁定提示的文案是什么？
+**为什么必须由产品来定**:
+用大白话说清楚：如果产品不回答这个问题，开发会面临什么困境。比如：
+- "开发没法自己拍板，因为这涉及到用户看到什么、体验是什么样的"
+- "现在线上的做法和需求里说的对不上，不知道是要改还是保留"
+- "这个决定会影响后面好几个功能怎么做"
+
+**希望你这样回答我们**:
+给出具体的回答格式引导，让产品知道要给什么形式的答复。比如：
+- 给个具体数字：失败几次之后锁定？锁定多长时间？
+- 画个流程：锁定之后用户怎么解锁？一步步的
+- 定个文案：锁定时给用户看什么提示？
 
 ---
 
@@ -261,26 +294,27 @@ Create the file `./review-reports/product-review-YYYY-MM-DD.md` (same date/colli
 
 ## 合规与法务提醒
 
-> 涉及数据隐私、安全、无障碍、法律等方面需要产品/法务确认的点（如果有）
+> 涉及用户数据、隐私、安全、法律等方面需要确认的事项（如果有的话，用白话解释为什么需要关注）
 
-- [ ] 是否涉及个人信息收集？是否符合 PIPL/GDPR？
+- [ ] 这个功能会收集用户的什么信息？需不需要走隐私合规审批？（参考 PIPL / GDPR 等法规）
 - [ ] ...
 
 ## 维度评分
 
-| 维度 | 评级 | 一句话 |
-|------|------|--------|
-| 完整性 | PASS/NEEDS WORK/MISSING | ... |
+| 维度 | 评级 | 白话解释 |
+|------|------|----------|
+| 完整性 | PASS/NEEDS WORK/MISSING | [用一句大白话解释为什么给这个评级] |
 | ...（12 项全部列出） |
 ```
 
 ### Guidance for generating the question list
 
-- Each item must be **a real question or problem**, not a generic complaint. "需求不完整" ❌ / "用户注销账户后，订单历史是否保留？保留多久？" ✅
+- Each item must be **a real question with full context**, not a generic complaint. "需求不完整" ❌ / "用户注销账户后，他之前的订单记录还能看到吗？保留多久？现在系统里没有'注销'功能，所以这个从零开始做，需要你定好规则。" ✅
+- **每个问题必须自包含**——读者不需要再去翻需求文档就能理解问题。引用原文时直接贴出来，解释现状时用白话讲清楚。
 - **Quote the original text** when pointing out ambiguity or contradiction
 - **🚨 重点关注语意表达不明确的地方** — 这是产品最容易犯的错误。凡是读完后让你产生"这里到底是什么意思？"、"谁来做？"、"什么时候？"、"哪种情况？"等疑问的描述，都必须作为问题提出来。宁可把潜在的理解分歧都问清楚，也不要让开发凭猜测实现。对于每一处语意不清的地方，引用原文 → 指出可能的多种理解 → 要求产品明确选哪一种。
-- **🚨 每个问题必须有项目依据** — 不能凭空提问。每个问题的「项目依据」字段必须引用 Step 2 中获取的项目上下文作为客观证据：现有代码行为、数据模型、API 接口、已有产品逻辑、技术栈限制等。让产品看到"不是开发在挑刺，而是项目现状确实需要你明确这个点"。如果某个问题无法从项目中找到直接依据（如全新功能），则说明"当前项目无相关实现，需产品定义从零开始的规则"，这本身也是依据。
-- **Expected answer format** helps product team give concrete answers (number, flow, copy, decision)
+- **🚨 每个问题必须有项目依据，但要用白话讲** — 不能凭空提问。引用项目现状时，把技术细节翻译成业务语言。比如不要说"`users` 表无 `login_attempts` 字段"，而是说"现在系统里没有记录用户登录失败次数的功能，如果要做这个，需要从零搭建，工作量不小"。让产品看到"不是开发在挑刺，而是项目现状确实需要你明确这个点"。
+- **Expected answer format** helps product team give concrete answers (number, flow, copy, decision) — phrase it as "希望你这样回答我们"
 - Don't over-question — don't ask things that are clearly implied or that are engineering-side decisions (those go in the dev report)
 - If a question is really a technical concern, don't put it here — put it in the dev report instead
 
@@ -322,14 +356,20 @@ Top 3 阻塞问题:
 ## Important guidelines
 
 - Write reports in **Chinese** (matching the team's language), with English technical terms where they add clarity
+- **🚨 写作风格的核心原则：白话、自包含、讲清因果**
+  - **白话**：用日常说话的方式写，不用公文体、不用学术腔。想象你在微信群里给同事解释一个问题。
+  - **自包含**：别人拿到报告后，不需要再去翻需求文档、不需要再去问开发，就能完全理解每一个问题。所有引用的需求原文直接贴在报告里，所有涉及的项目现状用白话解释清楚。
+  - **讲清因果**：每个问题都要有来龙去脉——现在是什么样 → 需求要改成什么样 → 为什么会出问题 / 为什么需要明确 → 不处理会怎样。不能只扔一个结论让人去猜。
+  - **用例子辅助说明**：遇到抽象或复杂的问题，举一个具体场景帮助理解。比如："假设用户正在支付的时候网断了，这时候应该怎么处理？需求里没说。"
+  - **技术概念要翻译**：开发报告里可以用术语但要加括号解释，产品报告里尽量完全不用术语，用业务语言替代。
 - **Two reports serve different purposes — do not mix them up:**
-  - 开发报告 = **注意事项清单**（"实施时要小心这些点"），面向工程师，内容必须技术具体、可操作
-  - 产品报告 = **问题清单**（"你需要回答这些问题 / 补充这些内容"），面向产品经理，每项都是一个明确问题或需要补充的点
+  - 开发报告 = **注意事项清单**（"实施时要小心这些点"），面向工程师，内容必须技术具体、可操作，但每条都要讲清楚前因后果，不能只写一个结论
+  - 产品报告 = **问题清单**（"你需要回答这些问题 / 补充这些内容"），面向产品经理和非技术读者，必须用大白话写，每个问题都是一个完整的故事
 - If something is a question *about what product wants*, it goes in the **product report**
 - If something is a caveat *about how engineering will build it*, it goes in the **dev report**
 - Be **specific and actionable** — every item should be concrete enough to directly act on. Avoid generic statements like "注意性能" or "需求不完整"
 - Do not invent requirements — only evaluate what is written, and flag what is missing
 - Ground the developer report in the **actual project context** from Step 2 (real file paths, real services, real frameworks)
-- Ground the product report in the **actual project context** too — every question must include a「项目依据」citing concrete evidence from the codebase (existing code behavior, data models, API contracts, tech stack constraints). Product questions without project-level evidence are not actionable and will be ignored by the product team.
+- Ground the product report in the **actual project context** too — every question must include concrete evidence from the codebase, but **translated into plain language** that non-technical readers can understand
 - When in doubt about a dimension, raise it as a question (product report) or a caveat (dev report) rather than silently passing it
 - **🚨 Ambiguity scan is non-negotiable** — Step 3 must be executed for every review. The 「语意不清与模糊表达对照表」section in the product report must always exist, even if empty (in which case write "✅ 未发现语意不清或表达模糊的描述"). Missing this section is a bug in the review, not a stylistic choice. When a sentence in the requirement could be read two different ways by two different developers, that IS a problem that must be surfaced — do not resolve the ambiguity silently in your head, bring it back to product.
